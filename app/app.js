@@ -1,36 +1,16 @@
 require('dotenv').config('../.env')
 const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-
+const {globalErrorHandler, notFoundHandler} = require('./error')
 
 const app = express();
 
 // middleware
-app.use(
-    [
-        morgan('dev'),
-        cors(),
-        express.json()
-    ]
-)
+app.use(require('./middleware'))
 
-app.get('/health', (_req, res) => {
-    res.status(200).json({message: "success"})
-})
+app.use(require('./routes'))
 
-app.use((req, _res, next) => {
-    const error = new Error('Resource not found')
-    error.status = 404
-    next(error)
-})
+app.use(notFoundHandler)
 
-app.use((error, req, res, next) => {
-    if(error.status){
-        res.status(error.status).json({
-            message: error.message
-        })
-    }
-})
+app.use(globalErrorHandler)
 
 module.exports = app;
